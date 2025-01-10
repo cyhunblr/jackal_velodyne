@@ -2,11 +2,11 @@
   <arg name="use_sim_time" default="true" />
   <arg name="gui" default="true" />
   <arg name="headless" default="false" />
-  <arg name="world_name" default="$(find jackal_velodyne)/worlds/parking_lot.world" />
+  <arg name="world_name" default="$(find jackal_velodyne)/worlds/simple_room.world" />
 
   <!-- Short-term hack to support the original front_laser:=true argument for spawning
        the simulator. This will be removed in favour of using the config:=x arg instead. -->
-  <arg name="front_laser" default="true" />
+  <arg name="front_laser" default="false" />
   <arg name="default_config" value="front_laser" if="$(arg front_laser)" />
   <arg name="default_config" value="base" unless="$(arg front_laser)" />
   <!-- end of hack -->
@@ -40,12 +40,35 @@
 
   <!-- Spawn Jackal -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
-              args="-urdf -model jackal -param robot_description -x 0 -y 0 -z 1.0" />
+              args="-urdf -model jackal -param robot_description -x 4.13 -y -2.01 -z 0.25" />
 
   <!-- Rviz -->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find jackal_velodyne)/launch/include/run.rviz" />
 
   <!-- TF -->
   <node pkg="jackal_velodyne" type="tf_publisher"    name="tf_publisher"    output="screen"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="front_cam_rotated_tf" args="0 0 0 -1.57079632679 0 -1.57079632679 rotated_front_cam front_cam 10" />
+  <node pkg="tf" type="static_transform_publisher" name="front_cam_tf" args="0.05 0 0.055 0 0 0 velodyne rotated_front_cam 10" /> 
+
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+
+  <remap from="cloud_in" to="sensor/lidar/velodyne_points"/>
+  <remap from="scan" to="/scan"/>
+  <rosparam>
+      transform_tolerance: 0.01
+      min_height: -0.4
+      max_height: 0.1
+
+      angle_min: -3.1415
+      angle_max: 3.1415
+      angle_increment: 0.01
+      scan_time: 0.1
+      range_min: 0.1
+      range_max: 100
+      use_inf: false
+      concurrency_level: 0
+  </rosparam>
+</node>
   
 </launch>

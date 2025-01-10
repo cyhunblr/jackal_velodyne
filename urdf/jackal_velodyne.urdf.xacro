@@ -200,22 +200,77 @@
     <xacro:include filename="$(env JACKAL_URDF_EXTRAS)" />
   </xacro:if>
 
-
-
-
-
-
-
-
   <!-- VLP-16 -->
   <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
-  <VLP-16 parent="base_link" name="velodyne" topic="/velodyne_points" hz="10" samples="360" gpu="true" lasers="16" max_range="100">
+  <xacro:VLP-16 parent="base_link" name="velodyne" topic="sensor/lidar/velodyne_points" hz="10" samples="1800" gpu="true">
     <origin xyz="0 0 0.4" rpy="0 0 0" />
-  </VLP-16>
+  </xacro:VLP-16>
+
+  <link name="front_cam">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://jackal_velodyne/meshes/lucid_new.stl" scale="1 1 1"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://jackal_velodyne/meshes/lucid_new.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <inertial>
+      <mass value="0.1" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <joint name="front_cam_joint" type="fixed">
+    <origin xyz="0.05 0 0.055" rpy="0 0 0"/>
+    <parent link="velodyne"/>
+    <child link="front_cam"/>
+  </joint>
+
+    <gazebo reference="front_cam">
+    <sensor type="camera" name="front_camera">
+    <camera>
+      <horizontal_fov>2.094395102</horizontal_fov>
+      <vertical_fov>1.014036295</vertical_fov>
+      <image>
+          <width>1920</width>
+          <height>1080</height>
+          <!-- <format>BAYER_RGGB8</format> -->
+          <format>RGB8</format> 
+          <anti_aliasing>4</anti_aliasing>
+      </image>
+      <clip>
+        <near>0.02</near>
+        <far>50</far>
+      </clip>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.007</stddev>
+      </noise>
+    </camera>
+    <plugin name="camera_controller_left" filename="libgazebo_ros_camera.so">
+      <alwaysOn>false</alwaysOn>
+      <updateRate>10.0</updateRate>
+      <cameraName>sensor/camera</cameraName>
+      <imageTopicName>image_raw</imageTopicName>
+      <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+      <frameName>front_cam</frameName>
+    </plugin>
+  </sensor>
+</gazebo> 
 
   <!-- VHDL-32E -->
-<!--   <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
-  <HDL-32E parent="base_link" name="velodyne_2" topic="/velodyne_points_2" hz="10" samples="1024" gpu="false">
+  <!-- <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
+  <HDL-32E parent="base_link" name="velodyne_2" topic="/velodyne_points_2" hz="10" samples="1024" gpu="true">
     <origin xyz="0 0 0.6" rpy="0 0 0" />
   </HDL-32E> -->
   
